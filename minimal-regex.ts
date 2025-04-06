@@ -10,6 +10,7 @@ type AffixTableItem = [
 const TERMINATOR = "\xa0";
 const MIN_AFFIX_LEN = 3;
 const NON_CAPTURING_GROUP = true;
+const AFFIX_TABLE_TOP_ONLY = false;
 
 function minimalRegex(words: readonly string[], group = true): string {
     const triePre = {};
@@ -35,6 +36,11 @@ function minimalRegex(words: readonly string[], group = true): string {
     addAffixDictToAffixTable(affixDictPost, affixTable, true);
 
     affixTable.sort((x, y) => y[3] - x[3]);
+
+    if (AFFIX_TABLE_TOP_ONLY) {
+        affixTable.splice(1);
+    }
+
     affixTable.push([false, "", [], 0]);
 
     for (const word of words) {
@@ -73,7 +79,11 @@ function minimalRegex(words: readonly string[], group = true): string {
         if (affix.length && childWords.length > 1) {
             pattern += minimalRegex(childWords, true);
         } else {
-            pattern += childWords.map(escape).join("|");
+            if (AFFIX_TABLE_TOP_ONLY && affixTable.length > 1) {
+                pattern += minimalRegex(childWords, false);
+            } else {
+                pattern += childWords.map(escape).join("|");
+            }
         }
         if (isPostfix) {
             pattern += escape(affix);
