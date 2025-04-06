@@ -11,7 +11,7 @@ const TERMINATOR = "\xa0";
 const MIN_AFFIX_LEN = 3;
 const NON_CAPTURING_GROUP = true;
 
-function minimalRegex(words: readonly string[]): string {
+function minimalRegex(words: readonly string[], group = true): string {
     const triePre = {};
     const triePost = {};
 
@@ -50,12 +50,15 @@ function minimalRegex(words: readonly string[]): string {
         }
     }
 
-    let pattern = "(";
-    if (NON_CAPTURING_GROUP) {
-        pattern += "?:";
-    }
-
+    let pattern = "";
     let first = true;
+
+    if (group) {
+        pattern += "(";
+        if (NON_CAPTURING_GROUP) {
+            pattern += "?:";
+        }
+    }
 
     for (const [isPostfix, affix, childWords] of affixTable) {
         if (!childWords.length) {
@@ -68,7 +71,7 @@ function minimalRegex(words: readonly string[]): string {
             pattern += escape(affix);
         }
         if (affix.length && childWords.length > 1) {
-            pattern += minimalRegex(childWords);
+            pattern += minimalRegex(childWords, true);
         } else {
             pattern += childWords.map(escape).join("|");
         }
@@ -78,7 +81,9 @@ function minimalRegex(words: readonly string[]): string {
         first = false;
     }
 
-    pattern += ")";
+    if (group) {
+        pattern += ")";
+    }
 
     return pattern;
 }
