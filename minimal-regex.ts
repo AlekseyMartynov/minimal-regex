@@ -12,10 +12,6 @@ const MIN_AFFIX_LEN = 3;
 const NON_CAPTURING_GROUP = true;
 
 function minimalRegex(words: readonly string[]): string {
-    if (words.length === 1) {
-        return escape(words[0]);
-    }
-
     const triePre = {};
     const triePost = {};
 
@@ -68,14 +64,16 @@ function minimalRegex(words: readonly string[]): string {
         if (!first) {
             pattern += "|";
         }
-        if (affix.length < 1) {
-            pattern += childWords.map(escape).join("|");
+        if (!isPostfix) {
+            pattern += escape(affix);
+        }
+        if (affix.length && childWords.length > 1) {
+            pattern += minimalRegex(childWords);
         } else {
-            if (isPostfix) {
-                pattern += minimalRegex(childWords) + escape(affix);
-            } else {
-                pattern += escape(affix) + minimalRegex(childWords);
-            }
+            pattern += childWords.map(escape).join("|");
+        }
+        if (isPostfix) {
+            pattern += escape(affix);
         }
         first = false;
     }
