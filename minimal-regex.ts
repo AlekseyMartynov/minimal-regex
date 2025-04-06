@@ -43,13 +43,12 @@ function minimalRegex(words: readonly string[]): string {
 
     for (const word of words) {
         for (const [isPostfix, affix, childWords] of affixTable) {
-            if (!isPostfix && word.substr(0, affix.length) === affix) {
-                childWords.push(word.substr(affix.length));
+            if (!isPostfix && word.startsWith(affix)) {
+                childWords.push(word.substring(affix.length));
                 break;
             }
-            const postfixIndex = word.length - affix.length;
-            if (isPostfix && word.substr(postfixIndex) === affix) {
-                childWords.push(word.substr(0, postfixIndex));
+            if (isPostfix && word.endsWith(affix)) {
+                childWords.push(word.substring(0, word.length - affix.length));
                 break;
             }
         }
